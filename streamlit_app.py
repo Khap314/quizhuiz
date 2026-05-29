@@ -48,6 +48,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("""
 - [ℹ️ Главные метрики](#glavnye-metriki)
 - [📈 Динамика результатов](#dinamika-rezultatov)
+- [📈 Занятое место по отношению к числу команд](##zanyatoe-mesto-po-otnosheniyu-k-chislu-komand)
 - [🎯 Эффективность по раундам](#effektivnost-po-raundam)
 - [🎭 Результаты по типам игр](#rezultaty-po-tipam-igr)
 - [🍻 Где мы чаще всего играем?](#gde-my-chasche-vsego-igraem)
@@ -89,7 +90,28 @@ st.plotly_chart(fig_timeline, use_container_width=True)
 st.markdown("---")
 
 # ==========================================
-# БЛОК 3: Аналитика по раундам и типам игр
+# БЛОК 3: Занятое место по отношению к числу команд
+# ==========================================
+st.subheader("📈 Занятое место по отношению к числу команд")
+chart_df = df_games.copy()
+# Вычисляем отношение (индекс места)
+chart_df['place_ratio'] = chart_df['placing'] / chart_df['teamNumber']
+
+fig_place_to_teamNum = px.line(
+    chart_df.sort_values("date"),
+    x="date",
+    y="place_ratio",
+    hover_data=["teamNumber", "placing", "date"],
+    markers=True,
+    title="Занятое место по отношению к числу команд",
+    labels={"date": "Дата", "place_ratio": "Отношение места к кол-ву команд"},
+)
+fig_place_to_teamNum.update_yaxes(autorange="reversed")
+st.plotly_chart(fig_place_to_teamNum, use_container_width=True)
+st.markdown("---")
+
+# ==========================================
+# БЛОК 4: Аналитика по раундам и типам игр
 # ==========================================
 left_col, right_col = st.columns(2)
 
@@ -142,7 +164,7 @@ with right_col:
 st.markdown("---")
 
 # ==========================================
-# БЛОК 4: Любимые бары / локации
+# БЛОК 5: Любимые бары / локации
 # ==========================================
 st.subheader("🍻 Где мы чаще всего играем?")
 df_bars = df_games["bar"].value_counts().reset_index()
@@ -154,7 +176,7 @@ fig_bars = px.pie(
 st.plotly_chart(fig_bars, use_container_width=True)
 
 # ==========================================
-# БЛОК 5: Таблица с поиском
+# БЛОК 6: Таблица с поиском
 # ==========================================
 st.subheader("📋 Все игры (сводная таблица)")
 st.dataframe(
@@ -181,23 +203,3 @@ st.dataframe(
             "summary": "Результат (баллов)"
         }
 )
-
-# ==========================================
-# БЛОК 2: Динамика результатов
-# ==========================================
-st.subheader("📈 Занятое место по отношению к числу команд")
-
-chart_df = df_games.copy()
-# Вычисляем отношение (индекс места)
-chart_df['place_ratio'] = chart_df['placing'] / chart_df['teamNumber']
-
-fig_place_to_teamNum = px.line(
-    chart_df.sort_values("date"),
-    x="date",
-    y="place_ratio",
-    hover_data=["teamNumber", "placing", "date"],
-    markers=True,
-    title="Занятое место по отношению к числу команд",
-    labels={"date": "Дата", "place_ratio": "Отношение места к кол-ву команд"},
-)
-st.plotly_chart(fig_place_to_teamNum, use_container_width=True)
