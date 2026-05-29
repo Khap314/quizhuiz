@@ -30,11 +30,11 @@ with login_container.container():
     else:
         login_container.empty()
 # Подключаемся к БД
-if not (Path(__file__).resolve().parent/"quiz.db").is_file():
+if not "data/quiz.db".is_file():
     st.error("Не найден файл БД!")
     st.stop()
 else:
-    conn = "data/quiz.db")
+    conn = "data/quiz.db"
     df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", conn)
     if df_games.empty:
         st.info("Не найдены данные в базе!")
