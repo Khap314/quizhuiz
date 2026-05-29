@@ -186,7 +186,7 @@ st.dataframe(
 # БЛОК 2: Динамика результатов
 # ==========================================
 st.subheader("📈 Занятое место по отношению к числу команд")
-fig_timeline = px.line(
+fig_place_to_teamNum = px.line(
     df_games.sort_values("date"),
     x="teamNumber",
     y="placing",
@@ -195,3 +195,4 @@ fig_timeline = px.line(
     title="Занятое место по отношению к числу команд",
     labels={"teamNumber": "Количество команд", "placing": "Занятое место"},
 )
+st.plotly_chart(fig_place_to_teamNum, use_container_width=True)
