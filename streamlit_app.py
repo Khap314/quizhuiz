@@ -181,3 +181,17 @@ st.dataframe(
             "summary": "Результат (баллов)"
         }
 )
+
+# ==========================================
+# БЛОК 2: Динамика результатов
+# ==========================================
+st.subheader("📈 Занятое место по отношению к числу команд")
+fig_timeline = px.line(
+    df_games.sort_values("date"),
+    x="teamNumber",
+    y="placing",
+    hover_data=["teamNumber", "placing", "date"],
+    markers=True,
+    title="Занятое место по отношению к числу команд",
+    labels={"teamNumber": "Количество команд", "placing": "Занятое место"},
+)
