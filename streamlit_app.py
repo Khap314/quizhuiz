@@ -186,13 +186,18 @@ st.dataframe(
 # БЛОК 2: Динамика результатов
 # ==========================================
 st.subheader("📈 Занятое место по отношению к числу команд")
+
+chart_df = filtered_df.copy()
+# Вычисляем отношение (индекс места)
+chart_df['place_ratio'] = chart_df['placing'] / chart_df['teamNumber']
+
 fig_place_to_teamNum = px.line(
     df_games.sort_values("date"),
-    x="teamNumber",
-    y="placing",
+    x="date",
+    y="place_ratio",
     hover_data=["teamNumber", "placing", "date"],
     markers=True,
     title="Занятое место по отношению к числу команд",
-    labels={"teamNumber": "Количество команд", "placing": "Занятое место"},
+    labels={"date": "Дата", "place_ratio": "Отношение места к кол-ву команд"},
 )
 st.plotly_chart(fig_place_to_teamNum, use_container_width=True)
