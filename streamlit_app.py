@@ -192,7 +192,7 @@ chart_df = df_games.copy()
 chart_df['place_ratio'] = chart_df['placing'] / chart_df['teamNumber']
 
 fig_place_to_teamNum = px.line(
-    df_games.sort_values("date"),
+    chart_df.sort_values("date"),
     x="date",
     y="place_ratio",
     hover_data=["teamNumber", "placing", "date"],
