@@ -48,7 +48,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("""
 - [ℹ️ Главные метрики](#glavnye-metriki)
 - [📈 Динамика результатов](#dinamika-rezultatov)
-- [📈 Занятое место по отношению к числу команд](##zanyatoe-mesto-po-otnosheniyu-k-chislu-komand)
+- [📈 Занятое место по отношению к числу команд](#zanyatoe-mesto-po-otnosheniyu-k-chislu-komand)
 - [🎯 Эффективность по раундам](#effektivnost-po-raundam)
 - [🎭 Результаты по типам игр](#rezultaty-po-tipam-igr)
 - [🍻 Где мы чаще всего играем?](#gde-my-chasche-vsego-igraem)
