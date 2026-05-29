@@ -187,7 +187,7 @@ st.dataframe(
 # ==========================================
 st.subheader("📈 Занятое место по отношению к числу команд")
 
-chart_df = filtered_df.copy()
+chart_df = df_games.copy()
 # Вычисляем отношение (индекс места)
 chart_df['place_ratio'] = chart_df['placing'] / chart_df['teamNumber']
 
