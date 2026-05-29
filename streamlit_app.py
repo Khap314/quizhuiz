@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from pathlib import Path
+from sqlalchemy import create_engine
 
 # Настройка страницы сайта
 st.set_page_config(
@@ -34,13 +35,12 @@ if not Path("data/quiz.db").is_file():
     st.error("Не найден файл БД!")
     st.stop()
 else:
-    conn = "data/quiz.db"
-    df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", conn)
+    engine = create_engine("sqlite:///data/quiz.db")
+    df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", con=engine)
     if df_games.empty:
         st.info("Не найдены данные в базе!")
         st.stop()
     df_games["date"] = pd.to_datetime(df_games["date"])
-    conn.close()
     
 # Sidebar
 st.sidebar.header("📍 Навигация")
