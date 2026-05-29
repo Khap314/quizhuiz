@@ -15,7 +15,7 @@ from pathlib import Path
 st.set_page_config(
     page_title = "Квиз, хуиз! Статистика",
     layout = "wide",
-    page_icon = Path(__file__).resolve().parent/"sticker.webp"
+    page_icon = "data/sticker.webp"
   )
 st.title("🧠 Гиганты мысли")
 st.markdown("---")
@@ -34,7 +34,7 @@ if not (Path(__file__).resolve().parent/"quiz.db").is_file():
     st.error("Не найден файл БД!")
     st.stop()
 else:
-    conn = sqlite3.connect(Path(__file__).resolve().parent/"quiz.db")
+    conn = "data/quiz.db")
     df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", conn)
     if df_games.empty:
         st.info("Не найдены данные в базе!")
