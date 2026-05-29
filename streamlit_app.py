@@ -30,7 +30,7 @@ with login_container.container():
     else:
         login_container.empty()
 # Подключаемся к БД
-if not "data/quiz.db".is_file():
+if not Path("data/quiz.db").is_file():
     st.error("Не найден файл БД!")
     st.stop()
 else:
