@@ -16,8 +16,7 @@ from sqlalchemy import create_engine
 st.set_page_config(
     page_title = "Квиз, хуиз! Статистика",
     layout = "wide",
-    #page_icon = "data/sticker.webp"
-    page_icon = "C:/Users/khapaev.m/Documents/giganti_mysli/data/sticker.webp"
+    page_icon = "data/sticker.webp"
   )
 st.title("🧠 Гиганты мысли")
 st.markdown("---")
@@ -32,13 +31,11 @@ with login_container.container():
     else:
         login_container.empty()
 # Подключаемся к БД
-#if not Path("data/quiz.db").is_file():
-if not Path("C:/Users/khapaev.m/Documents/giganti_mysli/data/quiz.db").is_file():
+if not Path("data/quiz.db").is_file():
     st.error("Не найден файл БД!")
     st.stop()
 else:
-    #engine = create_engine("sqlite:///data/quiz.db")
-    engine = create_engine("sqlite:///C:/Users/khapaev.m/Documents/giganti_mysli/data//quiz.db")
+    engine = create_engine("sqlite:///data/quiz.db")
     df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", con=engine)
     if df_games.empty:
         st.info("Не найдены данные в базе!")
