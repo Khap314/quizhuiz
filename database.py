@@ -19,6 +19,6 @@ def get_data_from_db():
         return "EMPTY_DB", None
         
     df['date'] = pd.to_datetime(df['date'])
-    df['day_name'] = df['date'].dt.day_name(locale='rus_rus')
-    #df['day_name'] = df['date'].dt.day_name(locale='ru_RU.UTF-8')
+    #df['day_name'] = df['date'].dt.day_name(locale='rus_rus')
+    df['day_name'] = df['date'].dt.day_name(locale='ru_RU.UTF-8')
     return "OK", df
