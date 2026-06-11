@@ -261,14 +261,11 @@ st.subheader("🗓️ Статистика по дням недели")
 
 df_filtered = render_filters(df_games)
 df_days = (
-    df_filtered.groupby("day_name")["placing"]
+    df_filtered.groupby(["day_num", "day_name"])["placing"]
     .agg(avg_place="mean", total_games="count")
     .reset_index()
 )
-# Сортируем дни недели по порядку (от Пн до Вс), чтобы график не стоял вразнобой
-days_order = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
-df_days['day_name'] = pd.Categorical(df_days['day_name'], categories=days_order, ordered=True)
-df_days = df_days.sort_values('day_name')
+df_days = df_days.sort_values('day_num')
 
 if not df_days.empty and df_days["total_games"].sum() > 0:
     fig = make_subplots(specs=[[{"secondary_y": True}]])
