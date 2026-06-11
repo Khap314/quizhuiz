@@ -1,74 +1,91 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 26 16:35:39 2026
-
-@author: khapaev.m
-"""
-
-import sqlite3
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from pathlib import Path
-from sqlalchemy import create_engine
+from plotly.subplots import make_subplots
+import plotly.graph_objects as graph_objects
+from database import get_data_from_db
+from filters import render_filters
 
+# ==========================================
 # Настройка страницы сайта
+# ==========================================
 st.set_page_config(
     page_title = "Квиз, хуиз! Статистика",
     layout = "wide",
     page_icon = "data/sticker.webp"
+    #page_icon = "C:/Users/Max/Documents/giganti_mysli/data/sticker.webp"
   )
 st.title("🧠 Гиганты мысли")
 st.markdown("---")
 
+# ==========================================
 # Авторизация
+# ==========================================
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
 login_container = st.empty()
-with login_container.container():
-    password = st.text_input("Введите пароль:", type="password")
-    if password != "quizhuiz":
-        st.error("Неверный пароль!")
-        st.stop()
-    else:
-        login_container.empty()
-# Подключаемся к БД
-if not Path("data/quiz.db").is_file():
+
+if not st.session_state["logged_in"]:
+    login_container = st.empty()
+    with login_container.container():
+        password = st.text_input("Введите пароль:", type="password")
+        if not password:
+            st.stop()
+        elif password != "quizhuiz":
+            st.error("❌ Неверный пароль!")
+            st.stop()
+        else:
+            st.session_state["logged_in"] = True
+            login_container.empty()
+            st.rerun()
+            
+# ==========================================
+# Подключение к БД
+# ==========================================
+status, data_result = get_data_from_db()
+
+if status == "NO_FILE":
     st.error("Не найден файл БД!")
     st.stop()
+elif status == "EMPTY_DB":
+    st.info("Не найдены данные в базе!")
+    st.stop()
 else:
-    engine = create_engine("sqlite:///data/quiz.db")
-    df_games = pd.read_sql_query("SELECT * FROM games ORDER BY date(date)", con=engine)
-    if df_games.empty:
-        st.info("Не найдены данные в базе!")
-        st.stop()
-    df_games["date"] = pd.to_datetime(df_games["date"])
+    df_games = data_result
     
+# ==========================================
 # Sidebar
+# ==========================================
 st.sidebar.header("📍 Навигация")
-st.sidebar.markdown("---")
 st.sidebar.markdown("""
-- [ℹ️ Главные метрики](#glavnye-metriki)
+- [ℹ️ Главные метрики](#glavnye-metriki-po-vsem-igram)
 - [📈 Динамика результатов](#dinamika-rezultatov)
 - [📈 Занятое место по отношению к числу команд](#zanyatoe-mesto-po-otnosheniyu-k-chislu-komand)
-- [🎯 Эффективность по раундам](#effektivnost-po-raundam)
+- [🎯 Эффективность по раундам](#effektivnost-po-raundam-v-ot-maksimuma)
 - [🎭 Результаты по типам игр](#rezultaty-po-tipam-igr)
 - [🍻 Где мы чаще всего играем?](#gde-my-chasche-vsego-igraem)
+- [🗓️ Статистика по дням недели](#statistika-po-dnyam-nedeli)
 - [📋 Все игры (сводная таблица)](#vse-igry-svodnaya-tablitsa)
 """, unsafe_allow_html=True)
 
 # ==========================================
 # БЛОК 1: Главные метрики (Key Metrics)
 # ==========================================
-st.subheader("ℹ️ Главные метрики")
+st.subheader("ℹ️ Главные метрики по всем играм")
 total_games = len(df_games)
+top_10_count = (df_games['placing'] <= 10).sum()
+top_5_count = (df_games['placing'] <= 5).sum()
+last_game = df_games["date"].max().strftime("%d.%m.%Y")
 avg_place = int(round(df_games["placing"].mean(), 1))
-last_game = df_games["date"].max().strftime("%Y.%m.%d")
 total_spent = df_games["price"].sum()
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 col1.metric("Всего сыграно игр", total_games)
-col2.metric("Среднее место", avg_place)
-col3.metric("Последняя игра", last_game)
-col4.metric("Потрачено на игры (руб)", f"{total_spent} ₽")
+col2.metric("Попаданий в топ 10", top_10_count)
+col3.metric("Попаданий в топ 5", top_5_count)
+col4.metric("Последняя игра", last_game)
+col5.metric("Среднее место во всех играх", avg_place)
+col6.metric("Потрачено на игры (руб) (пока на одного человека)", f"{total_spent} ₽")
 st.markdown("---")
 
 # ==========================================
@@ -86,7 +103,7 @@ fig_timeline = px.line(
 )
 # Разворачиваем ось Y, чтобы 1-е место было на самом верху графика
 fig_timeline.update_yaxes(autorange="reversed")
-st.plotly_chart(fig_timeline, use_container_width=True)
+st.plotly_chart(fig_timeline, width='stretch')
 st.markdown("---")
 
 # ==========================================
@@ -238,7 +255,73 @@ fig_bars = px.pie(
 st.plotly_chart(fig_bars, use_container_width=True)
 
 # ==========================================
-# БЛОК 6: Таблица с поиском
+# БЛОК 6: Статистика по дням недели
+# ==========================================
+st.subheader("🗓️ Статистика по дням недели")
+
+df_filtered = render_filters(df_games)
+df_days = (
+    df_filtered.groupby("day_name")["placing"]
+    .agg(avg_place="mean", total_games="count")
+    .reset_index()
+)
+# Сортируем дни недели по порядку (от Пн до Вс), чтобы график не стоял вразнобой
+days_order = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+df_days['day_name'] = pd.Categorical(df_days['day_name'], categories=days_order, ordered=True)
+df_days = df_days.sort_values('day_name')
+
+if not df_days.empty and df_days["total_games"].sum() > 0:
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    # Добавляем СТОЛБЦЫ для общего количества игр (левая ось Y)
+    fig.add_trace(
+        graph_objects.Bar(
+            x=df_days["day_name"],
+            y=df_days["total_games"],
+            text=df_days["total_games"],  # Указываем, какой текст выводить на столбцах
+            textposition="auto",  # Автоматически размещает текст (внутри или снаружи)
+            textfont=dict(
+                size=12, color="white"
+            ),  # Делаем шрифт белым и четким для темной темы
+            name="Количество игр",
+            marker_color="rgba(46, 117, 182, 0.6)",  # Полупрозрачный синий
+        ),
+        secondary_y=False,
+    )
+    
+    # Добавляем ЛИНИЮ для среднего балла (правая ось Y)
+    fig.add_trace(
+        graph_objects.Scatter(
+            x=df_days["day_name"],
+            y=df_days["avg_place"],
+            text=df_days["avg_place"].round(0),  # Указываем, какой текст выводить на столбцах
+            textposition="top center",
+            name="Среднее место (выше = лучше)",
+            mode="lines+markers+text",
+            line=dict(color="#FF4B4B", width=3),  # Красная линия
+        ),
+        secondary_y=True,
+    )
+    
+    # Настраиваем подписи осей и внешний вид
+    fig.update_layout(
+        title_text="Количество игр и среднее занятое место по дням недели",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    
+    fig.update_yaxes(title_text="<b>Всего игр</b> (столбцы)", secondary_y=False)
+    fig.update_yaxes(title_text="<b>Среднее место</b> (линия, 1-е место вверху)", secondary_y=True, autorange="reversed",)
+    
+    # Отображаем график в Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Нет данных по дням недели для выбранного фильтра 🤷‍♂️")
+
+st.markdown("---")
+
+# ==========================================
+# БЛОК 7: Таблица с поиском
 # ==========================================
 st.subheader("📋 Все игры (сводная таблица)")
 st.dataframe(
@@ -258,7 +341,6 @@ st.dataframe(
             "round5",
             "round6",
             "round7",
-            "extid"
         ]
     ].sort_values("date", ascending=False),
     use_container_width=True, 
@@ -270,6 +352,13 @@ st.dataframe(
             "bar": "Бар",
             "placing": "Занятое место",
             "teamNumber": "Количество команд",
-            "summary": "Результат (баллов)"
+            "summary": "Результат (баллов)",
+            "round1": "Раунд 1",
+            "round2": "Раунд 2",
+            "round3": "Раунд 3",
+            "round4": "Раунд 4",
+            "round5": "Раунд 5",
+            "round6": "Раунд 6",
+            "round7": "Раунд 7"
         }
 )
