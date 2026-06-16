@@ -47,6 +47,7 @@ page_weekdays = st.Page("pages/weekdays.py", title="Статистика по д
 page_gametypes = st.Page("pages/gameTypes.py", title="Результаты по типам игр", icon="🎭")
 page_rounds = st.Page("pages/rounds.py", title="Эффективность по раундам (в % от максимума)", icon="🎯")
 page_table = st.Page("pages/table.py", title="Все игры (сводная таблица)", icon="📋")
+page_photos = st.Page("pages/photo.py", title="Фото с игр", icon="📸")
 
 # ==========================================
 # Авторизация
@@ -91,5 +92,5 @@ else:
 # ==========================================
 # Навигация и запуск 
 # ==========================================
-    mainPage = st.navigation([page_metrics, page_dynamics, page_percentile, page_bars, page_weekdays, page_gametypes, page_rounds, page_table])
+    mainPage = st.navigation([page_metrics, page_dynamics, page_percentile, page_bars, page_weekdays, page_gametypes, page_rounds, page_table, page_photos])
     mainPage.run()
