@@ -13,7 +13,7 @@ st.set_page_config(
     page_title = "Квиз, хуиз! Статистика",
     layout = "wide",
     page_icon = "data/sticker.webp"
-    #page_icon = "C:/Users/Max/Documents/giganti_mysli/data/sticker.webp"
+    #page_icon = "C:/Users/khapaev.m/Documents/giganti_mysli/data/sticker.webp"
   )
 st.title("🧠 Гиганты мысли")
 st.markdown("---")
@@ -27,17 +27,27 @@ login_container = st.empty()
 
 if not st.session_state["logged_in"]:
     login_container = st.empty()
+    
     with login_container.container():
-        password = st.text_input("Введите пароль:", type="password")
-        if not password:
-            st.stop()
-        elif password != "quizhuiz":
-            st.error("❌ Неверный пароль!")
-            st.stop()
-        else:
-            st.session_state["logged_in"] = True
-            login_container.empty()
-            st.rerun()
+        st.subheader("Авторизация")
+        # Обертываем ввод в форму, чтобы кнопка и текстовое поле работали вместе
+        with st.form("login_form"):
+            password = st.text_input("Введите пароль:", type="password")
+            col1, col2 = st.columns([4, 1])
+            with col2:
+                submit_button = st.form_submit_button("Войти", width='stretch')
+            
+            # Логика проверяется ТОЛЬКО после нажатия кнопки или Enter
+            if submit_button:
+                if password == "quizhuiz":
+                    st.session_state["logged_in"] = True
+                    login_container.empty()  # Полностью убираем форму с экрана
+                    st.rerun()               # Перезапускаем скрипт уже как для авторизованного
+                else:
+                    st.error("❌ Неверный пароль!")
+                    
+        # Останавливаем выполнение остальной части скрипта, пока не войдем
+        st.stop()
             
 # ==========================================
 # Подключение к БД
@@ -56,6 +66,27 @@ else:
 # ==========================================
 # Sidebar
 # ==========================================
+# Шрифты
+st.markdown("""
+    <style>
+    /* Базовые настройки для мобильных экранов (ширина до 768px) */
+    @media (max-width: 768px) {
+        /* Уменьшаем главные заголовки (st.title) */
+        .stMarkdown h1 {
+            font-size: 1.8rem !important;
+        }
+        /* Уменьшаем подзаголовки (st.header / st.subheader) */
+        .stMarkdown h2, .stMarkdown h3 {
+            font-size: 1.3rem !important;
+        }
+        /* Уменьшаем обычный текст и подписи к виджетам */
+        .stMarkdown p, label {
+            font-size: 0.9rem !important;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.sidebar.header("📍 Навигация")
 st.sidebar.markdown("""
 - [ℹ️ Главные метрики](#glavnye-metriki-po-vsem-igram)
@@ -67,6 +98,14 @@ st.sidebar.markdown("""
 - [🗓️ Статистика по дням недели](#statistika-po-dnyam-nedeli)
 - [📋 Все игры (сводная таблица)](#vse-igry-svodnaya-tablitsa)
 """, unsafe_allow_html=True)
+
+# ==========================================
+# Конфиг для графиков
+# ==========================================
+plotConfig = {
+    'scrollZoom': False,      # Отключает зум колесиком мыши / щипком
+    #'displayModeBar': False   # Прячет верхнюю панель инструментов, которая наползает на мобильных
+}
 
 # ==========================================
 # БЛОК 1: Главные метрики (Key Metrics)
@@ -103,7 +142,11 @@ fig_timeline = px.line(
 )
 # Разворачиваем ось Y, чтобы 1-е место было на самом верху графика
 fig_timeline.update_yaxes(autorange="reversed")
-st.plotly_chart(fig_timeline, width='stretch')
+fig_timeline.update_layout(
+    height=400, 
+    margin=dict(l=20, r=20, t=40, b=20) # Уменьшаем отступы по бокам для экономии места
+)
+st.plotly_chart(fig_timeline, width='stretch', config=plotConfig)
 st.markdown("---")
 
 # ==========================================
@@ -124,7 +167,7 @@ fig_place_to_teamNum = px.line(
     labels={"date": "Дата", "place_ratio": "Отношение места к кол-ву команд"},
 )
 fig_place_to_teamNum.update_yaxes(autorange="reversed")
-st.plotly_chart(fig_place_to_teamNum, use_container_width=True)
+st.plotly_chart(fig_place_to_teamNum, width='stretch', config=plotConfig)
 st.markdown("---")
 
 # ==========================================
@@ -219,7 +262,7 @@ with left_col:
         customdata=avg_pct["Intermediate_score"] if "Intermediate_score" in avg_pct else avg_pct["Средний балл"]
     )
     
-    st.plotly_chart(fig_rounds, use_container_width=True)
+    st.plotly_chart(fig_rounds, width='stretch', config=plotConfig)
 
 with right_col:
     st.subheader("🎭 Результаты по типам игр")
@@ -238,7 +281,7 @@ with right_col:
         y="Среднее место",
         title="В каких играх мы сильнее? (Меньше столбец = лучше место)",
     )
-    st.plotly_chart(fig_types, use_container_width=True)
+    st.plotly_chart(fig_types, width='stretch', config=plotConfig)
 
 st.markdown("---")
 
@@ -252,7 +295,7 @@ df_bars.columns = ["Локация", "Количество игр"]
 fig_bars = px.pie(
     df_bars, values="Количество игр", names="Локация", hole=0.4
 )
-st.plotly_chart(fig_bars, use_container_width=True)
+st.plotly_chart(fig_bars, width='stretch', config=plotConfig)
 
 # ==========================================
 # БЛОК 6: Статистика по дням недели
@@ -311,7 +354,7 @@ if not df_days.empty and df_days["total_games"].sum() > 0:
     fig.update_yaxes(title_text="<b>Среднее место</b> (линия, 1-е место вверху)", secondary_y=True, autorange="reversed",)
     
     # Отображаем график в Streamlit
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch', config=plotConfig)
 else:
     st.info("Нет данных по дням недели для выбранного фильтра 🤷‍♂️")
 
@@ -340,7 +383,7 @@ st.dataframe(
             "round7",
         ]
     ].sort_values("date", ascending=False),
-    use_container_width=True, 
+    width='stretch', 
     column_config=
         {
             "date": st.column_config.DatetimeColumn("Дата", format="DD.MM.YYYY HH:mm"),
