@@ -19,4 +19,12 @@ fig_place_to_teamNum = px.line(
     labels={"date": "Дата", "percentile": "Процентиль"},
 )
 
+fig_place_to_teamNum.update_layout(
+    height=400, 
+    margin=dict(l=20, r=20, t=40, b=20),
+    dragmode=False, 
+    xaxis=dict(fixedrange=True),
+    yaxis=dict(fixedrange=True)
+)
+
 st.plotly_chart(fig_place_to_teamNum, width='stretch', config={'scrollZoom': False, 'displayModeBar': False})
