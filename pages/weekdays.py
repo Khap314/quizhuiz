@@ -57,6 +57,11 @@ if not df_days.empty and df_days["total_games"].sum() > 0:
         title_text="Количество игр и среднее занятое место по дням недели",
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        height=400, 
+        margin=dict(l=20, r=20, t=40, b=20),
+        dragmode=False, 
+        xaxis=dict(fixedrange=True),
+        yaxis=dict(fixedrange=True)
     )
     
     fig.update_yaxes(title_text="<b>Всего игр</b> (столбцы)", secondary_y=False)
