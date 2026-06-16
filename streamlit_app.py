@@ -104,7 +104,7 @@ st.sidebar.markdown("""
 # ==========================================
 plotConfig = {
     'scrollZoom': False,      # Отключает зум колесиком мыши / щипком
-    #'displayModeBar': False   # Прячет верхнюю панель инструментов, которая наползает на мобильных
+    'displayModeBar': False   # Прячет верхнюю панель инструментов, которая наползает на мобильных
 }
 
 # ==========================================
@@ -144,7 +144,10 @@ fig_timeline = px.line(
 fig_timeline.update_yaxes(autorange="reversed")
 fig_timeline.update_layout(
     height=400, 
-    margin=dict(l=20, r=20, t=40, b=20) # Уменьшаем отступы по бокам для экономии места
+    margin=dict(l=20, r=20, t=40, b=20), # Уменьшаем отступы по бокам для экономии места
+    dragmode=False, 
+    xaxis=dict(fixedrange=True),
+    yaxis=dict(fixedrange=True)
 )
 st.plotly_chart(fig_timeline, width='stretch', config=plotConfig)
 st.markdown("---")
