@@ -94,4 +94,12 @@ fig_rounds.update_traces(
     customdata=avg_pct["Intermediate_score"] if "Intermediate_score" in avg_pct else avg_pct["Средний балл"]
 )
 
+fig_rounds.update_layout(
+    height=400, 
+    margin=dict(l=20, r=20, t=40, b=20),
+    dragmode=False, 
+    xaxis=dict(fixedrange=True),
+    yaxis=dict(fixedrange=True)
+)
+
 st.plotly_chart(fig_rounds, width='stretch', config={'scrollZoom': False, 'displayModeBar': False})
